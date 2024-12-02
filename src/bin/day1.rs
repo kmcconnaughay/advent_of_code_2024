@@ -11,7 +11,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut group1: Vec<Location> = Vec::new();
     let mut group2: Vec<Location> = Vec::new();
 
-    for line in input.split("\n") {
+    for line in input.lines() {
         let (_, (location_one, location_two)) = locations_parser(line)?;
         group1.push(location_one);
         group2.push(location_two);
