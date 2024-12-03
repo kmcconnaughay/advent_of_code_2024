@@ -17,7 +17,6 @@ fn main() -> anyhow::Result<()> {
 }
 
 #[derive(Clone)]
-
 enum Instruction {
     Mul { multiplicand: i64, multiplier: i64 },
     Do,
