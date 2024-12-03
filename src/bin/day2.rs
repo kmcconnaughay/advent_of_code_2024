@@ -28,7 +28,7 @@ fn part2(reports: &Vec<Report>) -> i64 {
 }
 
 fn is_safe(report: &Report) -> bool {
-    let decreasing: bool = report[0] - report[1] > 0;
+    let decreasing = report[0] > report[1];
 
     for pair in report.windows(2) {
         let difference = pair[0] - pair[1];
