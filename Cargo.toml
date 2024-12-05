@@ -8,3 +8,14 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.93"
 nom = "7.1.3"
+
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "day3_benchmark"
+harness = false
+
+[[bench]]
+name = "day4_benchmark"
+harness = false
