@@ -1,173 +1,124 @@
-use std::collections::HashMap;
-
 fn main() -> anyhow::Result<()> {
     let input = include_str!("../data/day4.txt");
     println!("Day 4 part 1: {}", part1(input));
-    println!("Day 4 part 2: {}", part2(input));
+    println!("Day 4 part 1: {}", part2(input));
 
     Ok(())
 }
 
-struct Offset {
-    i: i32,
-    j: i32,
-}
+const XMAS_DIRECTIONS: [[isize; 2]; 8] = [
+    [0, 1],
+    [0, -1],
+    [1, 0],
+    [-1, 0],
+    [1, 1],
+    [1, -1],
+    [-1, -1],
+    [-1, 1],
+];
 
-#[derive(Hash, PartialEq, Eq)]
-struct Coordinate {
-    i: i32,
-    j: i32,
-}
+fn part1(input: &str) -> u32 {
+    let word = "XMAS";
+    let num_rows = input.lines().count();
+    let num_cols = input
+        .lines()
+        .next()
+        .map(|line| line.len())
+        .unwrap_or_default();
 
-impl Coordinate {
-    fn plus(&self, offset: &Offset) -> Self {
-        Self {
-            i: self.i + offset.i,
-            j: self.j + offset.j,
+    let mut count = 0;
+    for (row, line) in input.lines().enumerate() {
+        for (col, _letter) in line.char_indices() {
+            for [row_direction, col_direction] in XMAS_DIRECTIONS {
+                if matches_in_direction(
+                    input,
+                    word,
+                    row as isize,
+                    col as isize,
+                    row_direction,
+                    col_direction,
+                    num_rows,
+                    num_cols,
+                ) {
+                    count += 1
+                }
+            }
         }
     }
+
+    count
 }
 
-fn part1(input: &str) -> i32 {
-    let word_search: HashMap<Coordinate, char> = input
+const X_MAS_DIRECTIONS: [[isize; 2]; 4] = [[1, 1], [1, -1], [-1, -1], [-1, 1]];
+
+fn part2(input: &str) -> u32 {
+    let word = "MAS";
+    let num_rows = input.lines().count();
+    let num_cols = input
         .lines()
-        .enumerate()
-        .flat_map(|(i, line)| {
-            line.chars().enumerate().map(move |(j, character)| {
-                (
-                    Coordinate {
-                        i: i as i32,
-                        j: j as i32,
-                    },
-                    character,
-                )
-            })
-        })
-        .collect::<HashMap<Coordinate, char>>();
+        .next()
+        .map(|line| line.len())
+        .unwrap_or_default();
 
-    word_search
-        .iter()
-        .filter_map(|(coordinate, letter)| {
-            if *letter == 'X' {
-                Some(coordinate)
-            } else {
-                None
+    let mut count = 0;
+    for (row, line) in input.lines().enumerate() {
+        for (col, _letter) in line.char_indices() {
+            let mut num_matches = 0;
+            for [row_direction, col_direction] in X_MAS_DIRECTIONS {
+                if matches_in_direction(
+                    input,
+                    word,
+                    row as isize - row_direction,
+                    col as isize - col_direction,
+                    row_direction,
+                    col_direction,
+                    num_rows,
+                    num_cols,
+                ) {
+                    num_matches += 1;
+                }
             }
-        })
-        .map(|coordinate| {
-            XMAS_DIRECTIONS
-                .iter()
-                .filter(|direction| {
-                    word_search
-                        .get(&coordinate.plus(&direction[0]))
-                        .is_some_and(|letter| *letter == 'M')
-                        && word_search
-                            .get(&coordinate.plus(&direction[1]))
-                            .is_some_and(|letter| *letter == 'A')
-                        && word_search
-                            .get(&coordinate.plus(&direction[2]))
-                            .is_some_and(|letter| *letter == 'S')
-                })
-                .count() as i32
-        })
-        .sum()
+
+            if num_matches == 2 {
+                count += 1;
+            }
+        }
+    }
+    count
 }
 
-const XMAS_DIRECTIONS: [[Offset; 3]; 8] = [
-    [
-        Offset { i: 0, j: 1 },
-        Offset { i: 0, j: 2 },
-        Offset { i: 0, j: 3 },
-    ],
-    [
-        Offset { i: 0, j: -1 },
-        Offset { i: 0, j: -2 },
-        Offset { i: 0, j: -3 },
-    ],
-    [
-        Offset { i: 1, j: 0 },
-        Offset { i: 2, j: 0 },
-        Offset { i: 3, j: 0 },
-    ],
-    [
-        Offset { i: -1, j: 0 },
-        Offset { i: -2, j: 0 },
-        Offset { i: -3, j: 0 },
-    ],
-    [
-        Offset { i: 1, j: 1 },
-        Offset { i: 2, j: 2 },
-        Offset { i: 3, j: 3 },
-    ],
-    [
-        Offset { i: 1, j: -1 },
-        Offset { i: 2, j: -2 },
-        Offset { i: 3, j: -3 },
-    ],
-    [
-        Offset { i: -1, j: 1 },
-        Offset { i: -2, j: 2 },
-        Offset { i: -3, j: 3 },
-    ],
-    [
-        Offset { i: -1, j: -1 },
-        Offset { i: -2, j: -2 },
-        Offset { i: -3, j: -3 },
-    ],
-];
+fn matches_in_direction(
+    input: &str,
+    word: &str,
+    row: isize,
+    col: isize,
+    row_direction: isize,
+    col_direction: isize,
+    num_rows: usize,
+    num_cols: usize,
+) -> bool {
+    for (index, letter) in word.char_indices() {
+        let index = index as isize;
+        let next_row = row + index * row_direction;
+        let next_col = col + index * col_direction;
 
-fn part2(input: &str) -> i32 {
-    let word_search: HashMap<Coordinate, char> = input
-        .lines()
-        .enumerate()
-        .flat_map(|(i, line)| {
-            line.chars().enumerate().map(move |(j, character)| {
-                (
-                    Coordinate {
-                        i: i as i32,
-                        j: j as i32,
-                    },
-                    character,
-                )
-            })
-        })
-        .collect::<HashMap<Coordinate, char>>();
+        if next_row < 0
+            || next_row >= num_rows as isize
+            || next_col < 0
+            || next_col >= num_cols as isize
+        {
+            return false;
+        }
 
-    word_search
-        .iter()
-        .filter_map(|(coordinate, letter)| {
-            if *letter == 'A' {
-                Some(coordinate)
-            } else {
-                None
-            }
-        })
-        .filter(|coordinate| {
-            let num_matches = X_MAS_DIRECTIONS
-                .iter()
-                .filter(|offsets| {
-                    word_search
-                        .get(&coordinate.plus(&offsets[0]))
-                        .is_some_and(|letter| *letter == 'M')
-                        && word_search
-                            .get(&coordinate.plus(&offsets[1]))
-                            .is_some_and(|letter| *letter == 'S')
-                })
-                .count();
+        let next_row = next_row as usize;
+        let next_col = next_col as usize;
+        if input.as_bytes()[next_row * (num_cols + 1) + next_col] != letter as u8 {
+            return false;
+        }
+    }
 
-            num_matches == 2
-        })
-        .count() as i32
+    true
 }
-
-const X_MAS_DIRECTIONS: [[Offset; 2]; 4] = [
-    [Offset { i: -1, j: -1 }, Offset { i: 1, j: 1 }],
-    [Offset { i: 1, j: 1 }, Offset { i: -1, j: -1 }],
-    [Offset { i: 1, j: -1 }, Offset { i: -1, j: 1 }],
-    [Offset { i: -1, j: 1 }, Offset { i: 1, j: -1 }],
-];
-
-const _X_MAS_CHARS: [char; 2] = ['M', 'S'];
 
 #[cfg(test)]
 mod tests {
