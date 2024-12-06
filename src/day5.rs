@@ -64,9 +64,7 @@ pub fn part2(input: &str) -> anyhow::Result<u32> {
 }
 
 fn parse(input: &str) -> IResult<&str, (Multimap<u32, u32>, Vec<Vec<u32>>)> {
-    let (input, parsed_rules) = terminated(rules, line_ending)(input)?;
-    let (input, parsed_updates) = updates(input)?;
-    Ok((input, (parsed_rules, parsed_updates)))
+    separated_pair(rules, line_ending, updates)(input)
 }
 
 fn rules(input: &str) -> IResult<&str, Multimap<u32, u32>> {
