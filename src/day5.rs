@@ -1,50 +1,49 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
-use std::io;
+use std::collections::HashSet;
 
-type Multimap<K, V> = HashMap<K, Vec<V>>;
+use anyhow::anyhow;
+use nom::character;
+use nom::character::complete::line_ending;
+use nom::multi::fold_many1;
+use nom::multi::separated_list1;
+use nom::sequence::separated_pair;
+use nom::sequence::terminated;
+use nom::IResult;
 
-pub fn part1(input: &str) -> anyhow::Result<u64> {
-    let (raw_page_ordering_rules, raw_updates) = input.split_once("\n\n").ok_or(io::Error::new(
-        io::ErrorKind::InvalidData,
-        "Unable to split input",
-    ))?;
+type Multimap<K, V> = HashMap<K, HashSet<V>>;
 
-    let page_ordering_rules = parse_page_ordering_rules(raw_page_ordering_rules)?;
+pub fn part1(input: &str) -> anyhow::Result<u32> {
+    let (_, (page_ordering_rules, page_updates)) =
+        parse(input).map_err(|e| anyhow!("Unable to parse input: {}", e))?;
 
-    Ok(raw_updates
-        .lines()
-        .map(|line| line.split(',').collect::<Vec<&str>>())
+    Ok(page_updates
+        .iter()
         .filter(|update| {
-            update.windows(2).all(|window| {
+            update.is_sorted_by(|a, b| {
                 page_ordering_rules
-                    .get(window[0])
-                    .map_or(false, |followers| followers.contains(&window[1]))
+                    .get(a)
+                    .map_or(false, |followers| followers.contains(b))
             })
         })
-        .filter_map(|update| update[update.len() / 2].parse::<u64>().ok())
+        .map(|update| update[update.len() / 2])
         .sum())
 }
 
-pub fn part2(input: &str) -> anyhow::Result<u64> {
-    let (raw_page_ordering_rules, raw_updates) = input.split_once("\n\n").ok_or(io::Error::new(
-        io::ErrorKind::InvalidData,
-        "Unable to split input",
-    ))?;
+pub fn part2(input: &str) -> anyhow::Result<u32> {
+    let (_, (page_ordering_rules, mut page_updates)) =
+        parse(input).map_err(|e| anyhow!("Unable to parse input: {}", e))?;
 
-    let page_ordering_rules = parse_page_ordering_rules(raw_page_ordering_rules)?;
-
-    Ok(raw_updates
-        .lines()
-        .map(|line| line.split(',').collect::<Vec<&str>>())
+    Ok(page_updates
+        .iter_mut()
         .filter(|update| {
-            !update.windows(2).all(|window| {
+            !update.is_sorted_by(|a, b| {
                 page_ordering_rules
-                    .get(window[0])
-                    .map_or(false, |followers| followers.contains(&window[1]))
+                    .get(a)
+                    .map_or(false, |followers| followers.contains(b))
             })
         })
-        .filter_map(|mut update| {
+        .filter_map(|update| {
             let pivot_position = update.len() / 2;
             let (_lesser, pivot, _greater) =
                 update.select_nth_unstable_by(pivot_position, |a, b| {
@@ -59,26 +58,43 @@ pub fn part2(input: &str) -> anyhow::Result<u64> {
                         None => Ordering::Greater,
                     }
                 });
-            pivot.parse::<u64>().ok()
+            Some(&*pivot)
         })
         .sum())
 }
 
-fn parse_page_ordering_rules(
-    raw_page_ordering_rules: &str,
-) -> anyhow::Result<Multimap<&str, &str>> {
-    let mut page_ordering_rules = HashMap::<&str, Vec<&str>>::new();
-    for rule in raw_page_ordering_rules.lines() {
-        let (page, follower) = rule.split_once('|').ok_or(io::Error::new(
-            io::ErrorKind::InvalidData,
-            format!("Unable to parse page ordering rule: {}", rule),
-        ))?;
-        page_ordering_rules
-            .entry(page)
-            .or_insert(Vec::new())
-            .push(follower);
-    }
-    Ok(page_ordering_rules)
+fn parse(input: &str) -> IResult<&str, (Multimap<u32, u32>, Vec<Vec<u32>>)> {
+    let (input, parsed_rules) = terminated(rules, line_ending)(input)?;
+    let (input, parsed_updates) = updates(input)?;
+    Ok((input, (parsed_rules, parsed_updates)))
+}
+
+fn rules(input: &str) -> IResult<&str, Multimap<u32, u32>> {
+    fold_many1(
+        terminated(
+            separated_pair(
+                character::complete::u32,
+                character::complete::char('|'),
+                character::complete::u32,
+            ),
+            line_ending,
+        ),
+        HashMap::default,
+        |mut page_ordering_rules: Multimap<u32, u32>, (page, follower)| {
+            page_ordering_rules
+                .entry(page)
+                .or_insert(HashSet::new())
+                .insert(follower);
+            page_ordering_rules
+        },
+    )(input)
+}
+
+fn updates(input: &str) -> IResult<&str, Vec<Vec<u32>>> {
+    separated_list1(
+        line_ending,
+        separated_list1(character::complete::char(','), character::complete::u32),
+    )(input)
 }
 
 #[cfg(test)]
