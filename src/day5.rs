@@ -43,7 +43,7 @@ pub fn part2(input: &str) -> anyhow::Result<u32> {
                     .map_or(false, |followers| followers.contains(b))
             })
         })
-        .filter_map(|update| {
+        .map(|update| {
             let pivot_position = update.len() / 2;
             let (_lesser, pivot, _greater) =
                 update.select_nth_unstable_by(pivot_position, |a, b| {
@@ -58,7 +58,7 @@ pub fn part2(input: &str) -> anyhow::Result<u32> {
                         None => Ordering::Greater,
                     }
                 });
-            Some(&*pivot)
+            &*pivot
         })
         .sum())
 }
