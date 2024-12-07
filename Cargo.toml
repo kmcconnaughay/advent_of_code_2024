@@ -7,6 +7,8 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.93"
+itertools = "0.13.0"
+ndarray = "0.16.1"
 nom = "7.1.3"
 
 [dev-dependencies]
@@ -22,4 +24,8 @@ harness = false
 
 [[bench]]
 name = "day5_benchmark"
+harness = false
+
+[[bench]]
+name = "day6_benchmark"
 harness = false
