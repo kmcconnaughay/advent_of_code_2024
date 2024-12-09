@@ -16,9 +16,7 @@ pub fn part1(input: &str) -> anyhow::Result<i64> {
     group2.sort();
 
     Ok(zip(group1, group2)
-        .map(|(location_one, location_two)| {
-            return (location_one - location_two).abs();
-        })
+        .map(|(location_one, location_two)| (location_one - location_two).abs())
         .sum())
 }
 

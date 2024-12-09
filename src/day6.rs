@@ -52,7 +52,7 @@ pub fn part2(input: &str) -> anyhow::Result<usize> {
             path,
         } => {
             for (position, direction) in &path[..(path.len() - 1)] {
-                let obstacle_position = step(position, &direction);
+                let obstacle_position = step(position, direction);
                 let next_tile = &map[(obstacle_position[0], obstacle_position[1])];
                 if *next_tile == Tile::Obstacle || *next_tile == Tile::GuardStart {
                     continue;
@@ -77,7 +77,7 @@ fn simulate_guard(
     starting_position: &[usize; 2],
     record_path: bool,
 ) -> SimulationResult {
-    let mut position = starting_position.clone();
+    let mut position = *starting_position;
     let mut direction = Direction::Up;
     let mut visited_tiles: Array2<u8> = Array2::zeros(map.dim());
     let mut path = Vec::from([(position, direction)]);
@@ -100,7 +100,7 @@ fn simulate_guard(
 
     SimulationResult::LeavesMap {
         num_visited_tiles: visited_tiles.iter().filter(|mask| **mask != 0).count(),
-        path: path,
+        path,
     }
 }
 

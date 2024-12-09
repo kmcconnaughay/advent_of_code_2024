@@ -81,7 +81,7 @@ fn rules(input: &str) -> IResult<&str, Multimap<u32, u32>> {
         |mut page_ordering_rules: Multimap<u32, u32>, (page, follower)| {
             page_ordering_rules
                 .entry(page)
-                .or_insert(HashSet::new())
+                .or_default()
                 .insert(follower);
             page_ordering_rules
         },

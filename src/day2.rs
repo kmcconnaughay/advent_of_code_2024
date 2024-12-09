@@ -42,7 +42,7 @@ fn is_safe(report: &Report) -> bool {
             return false;
         }
 
-        if magnitude < 1 || magnitude > 3 {
+        if !(1..=3).contains(&magnitude) {
             return false;
         }
     }

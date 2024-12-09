@@ -64,15 +64,13 @@ impl Antenna {
 
     fn antinodes(&self, other: &Self) -> [Coordinate; 2] {
         let delta = self.delta(other);
-        let positions = [
+        [
             [self.coordinate[0] + delta[0], self.coordinate[1] + delta[1]],
             [
                 other.coordinate[0] - delta[0],
                 other.coordinate[1] - delta[1],
             ],
-        ];
-
-        positions
+        ]
     }
 
     fn resonant_antinodes(&self, other: &Self, map_dims: &[isize; 2]) -> Vec<Coordinate> {
@@ -122,7 +120,7 @@ fn parse(input: &str) -> (Coordinate, Vec<Antenna>) {
                     None
                 } else {
                     Some(Antenna {
-                        frequency: frequency,
+                        frequency,
                         coordinate: [row as isize, col as isize],
                     })
                 }
