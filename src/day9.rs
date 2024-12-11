@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use std::{collections::VecDeque, iter::zip};
 
 pub fn part1(input: &str) -> u64 {
@@ -6,55 +5,64 @@ pub fn part1(input: &str) -> u64 {
     let mut compressed = VecDeque::default();
 
     while let Some(front) = fragmented.pop_front() {
-        let mut free_len = fragmented
+        let free_start = front.end;
+        let free_len = fragmented
             .front()
             .map_or(0, |second| second.start - front.end);
-        let mut free_start = front.end;
 
         compressed.push_back(front);
-        if free_len == 0 {
-            continue;
-        }
-
-        while let Some(back) = fragmented.pop_back() {
-            if back.len() > free_len {
-                let moved = File {
-                    start: free_start,
-                    end: free_start + free_len,
-                    id: back.id,
-                    fixed: false,
-                };
-                let leftover = File {
-                    start: back.start,
-                    end: back.end - free_len,
-                    id: back.id,
-                    fixed: false,
-                };
-                compressed.push_back(moved);
-                fragmented.push_back(leftover);
-                break;
-            } else if back.len() == free_len {
-                compressed.push_back(File {
-                    start: free_start,
-                    end: free_start + free_len,
-                    id: back.id,
-                    fixed: false,
-                });
-                break;
-            } else {
-                compressed.push_back(File {
-                    start: free_start,
-                    end: free_start + back.len(),
-                    id: back.id,
-                    fixed: false,
-                });
-                free_len -= back.len();
-                free_start += back.len();
-            }
-        }
+        fill_free_block(&mut fragmented, &mut compressed, free_start, free_len);
     }
 
     checksum(&compressed)
+}
+
+fn fill_free_block(
+    fragmented: &mut VecDeque<File>,
+    compressed: &mut VecDeque<File>,
+    mut free_start: u64,
+    mut free_len: u64,
+) {
+    if free_len == 0 {
+        return;
+    }
+
+    while let Some(back) = fragmented.pop_back() {
+        if back.len() > free_len {
+            let moved = File {
+                start: free_start,
+                end: free_start + free_len,
+                id: back.id,
+                fixed: false,
+            };
+            let leftover = File {
+                start: back.start,
+                end: back.end - free_len,
+                id: back.id,
+                fixed: false,
+            };
+            compressed.push_back(moved);
+            fragmented.push_back(leftover);
+            return;
+        } else if back.len() == free_len {
+            compressed.push_back(File {
+                start: free_start,
+                end: free_start + free_len,
+                id: back.id,
+                fixed: false,
+            });
+            return;
+        } else {
+            compressed.push_back(File {
+                start: free_start,
+                end: free_start + back.len(),
+                id: back.id,
+                fixed: false,
+            });
+            free_len -= back.len();
+            free_start += back.len();
+        }
+    }
 }
 
 pub fn part2(input: &str) -> u64 {
@@ -73,6 +81,7 @@ pub fn part2(input: &str) -> u64 {
             continue;
         }
 
+        let move_len = end - start;
         let mut moved_file = false;
 
         for (first_index, second_index) in zip(0..back_index, 1..=back_index) {
@@ -80,12 +89,12 @@ pub fn part2(input: &str) -> u64 {
             let second = &disk_map[second_index];
             let free_len = second.start - first.end;
 
-            if free_len >= end - start {
+            if free_len >= move_len {
                 disk_map.insert(
                     second_index,
                     File {
                         start: first.end,
-                        end: first.end + end - start,
+                        end: first.end + move_len,
                         id: *id,
                         fixed: true,
                     },
@@ -105,7 +114,6 @@ pub fn part2(input: &str) -> u64 {
     checksum(&disk_map)
 }
 
-#[derive(Debug)]
 struct File {
     start: u64,
     end: u64,
