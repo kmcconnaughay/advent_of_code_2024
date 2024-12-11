@@ -17,17 +17,37 @@ criterion = "0.5.1"
 proptest = "1.5.0"
 
 [[bench]]
-name = "day3_benchmark"
+name = "day01_benchmark"
 harness = false
 
 [[bench]]
-name = "day4_benchmark"
+name = "day02_benchmark"
 harness = false
 
 [[bench]]
-name = "day5_benchmark"
+name = "day03_benchmark"
 harness = false
 
 [[bench]]
-name = "day6_benchmark"
+name = "day04_benchmark"
+harness = false
+
+[[bench]]
+name = "day05_benchmark"
+harness = false
+
+[[bench]]
+name = "day06_benchmark"
+harness = false
+
+[[bench]]
+name = "day07_benchmark"
+harness = false
+
+[[bench]]
+name = "day08_benchmark"
+harness = false
+
+[[bench]]
+name = "day09_benchmark"
 harness = false
