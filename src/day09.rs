@@ -163,12 +163,12 @@ mod tests {
     const INPUT: &str = "2333133121414131402";
 
     #[test]
-    pub fn part1_todo() {
+    pub fn part1_checksums_maximal_compaction() {
         assert_eq!(part1(INPUT), 1928);
     }
 
     #[test]
-    pub fn part2_todo() {
+    pub fn part2_checksums_compaction_without_fragmentation() {
         assert_eq!(part2(INPUT), 2858);
     }
 }
