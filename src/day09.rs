@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, iter::zip};
+use std::{cmp::Ordering, collections::VecDeque, iter::zip};
 
 pub fn part1(input: &str) -> u64 {
     let mut fragmented = parse(input);
@@ -28,39 +28,43 @@ fn fill_free_block(
     }
 
     while let Some(back) = fragmented.pop_back() {
-        if back.len() > free_len {
-            let moved = File {
-                start: free_start,
-                end: free_start + free_len,
-                id: back.id,
-                fixed: false,
-            };
-            let leftover = File {
-                start: back.start,
-                end: back.end - free_len,
-                id: back.id,
-                fixed: false,
-            };
-            compressed.push_back(moved);
-            fragmented.push_back(leftover);
-            return;
-        } else if back.len() == free_len {
-            compressed.push_back(File {
-                start: free_start,
-                end: free_start + free_len,
-                id: back.id,
-                fixed: false,
-            });
-            return;
-        } else {
-            compressed.push_back(File {
-                start: free_start,
-                end: free_start + back.len(),
-                id: back.id,
-                fixed: false,
-            });
-            free_len -= back.len();
-            free_start += back.len();
+        match back.len().cmp(&free_len) {
+            Ordering::Greater => {
+                let moved = File {
+                    start: free_start,
+                    end: free_start + free_len,
+                    id: back.id,
+                    fixed: false,
+                };
+                let leftover = File {
+                    start: back.start,
+                    end: back.end - free_len,
+                    id: back.id,
+                    fixed: false,
+                };
+                compressed.push_back(moved);
+                fragmented.push_back(leftover);
+                return;
+            }
+            Ordering::Equal => {
+                compressed.push_back(File {
+                    start: free_start,
+                    end: free_start + free_len,
+                    id: back.id,
+                    fixed: false,
+                });
+                return;
+            }
+            Ordering::Less => {
+                compressed.push_back(File {
+                    start: free_start,
+                    end: free_start + back.len(),
+                    id: back.id,
+                    fixed: false,
+                });
+                free_len -= back.len();
+                free_start += back.len();
+            }
         }
     }
 }

@@ -4,11 +4,11 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 const INPUT: &str = include_str!("../inputs/day02.txt");
 
 pub fn day02_part1_benchmark(c: &mut Criterion) {
-    c.bench_function("day 2 part 1", |b| b.iter(|| part1(black_box(INPUT))));
+    c.bench_function("day 02 part 1", |b| b.iter(|| part1(black_box(INPUT))));
 }
 
 pub fn day02_part2_benchmark(c: &mut Criterion) {
-    c.bench_function("day 2 part 2", |b| b.iter(|| part2(black_box(INPUT))));
+    c.bench_function("day 02 part 2", |b| b.iter(|| part2(black_box(INPUT))));
 }
 
 criterion_group!(benches, day02_part1_benchmark, day02_part2_benchmark);
