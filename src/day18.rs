@@ -1,4 +1,4 @@
-use std::collections::{BinaryHeap, HashMap};
+use std::collections::{BinaryHeap, HashMap, HashSet};
 
 use anyhow::anyhow;
 use ndarray::Array2;
@@ -35,7 +35,7 @@ pub fn part2(input: &str, map_dims: (usize, usize)) -> anyhow::Result<Position> 
         .into_iter()
         .find(|fallen| {
             memory_space[*fallen] = 1;
-            dijkstra(&memory_space, &start, &end).is_none()
+            !connected(&memory_space, &start, &end)
         })
         .ok_or(anyhow!("No fallen byte made memory space impassable"))
 }
@@ -76,6 +76,29 @@ fn dijkstra(memory_space: &MemorySpace, start: &Position, end: &Position) -> Opt
     }
 
     costs.get(end).copied()
+}
+
+fn connected(memory_space: &MemorySpace, start: &Position, end: &Position) -> bool {
+    let mut visited = Array2::<bool>::from_elem(memory_space.dim(), false);
+    let mut stack = vec![*start];
+
+    while let Some(position) = stack.pop() {
+        if position == *end {
+            return true;
+        }
+
+        if visited[position] {
+            continue;
+        }
+
+        visited[position] = true;
+
+        for adjacent in adjacent_positions(memory_space, &position) {
+            stack.push(adjacent);
+        }
+    }
+
+    false
 }
 
 fn adjacent_positions(memory_space: &MemorySpace, position: &Position) -> Vec<Position> {
