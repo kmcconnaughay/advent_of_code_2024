@@ -32,9 +32,9 @@ fn num_cheats(
     max_cheat_cost: usize,
 ) -> anyhow::Result<usize> {
     let original_path = get_path(
-        &grid,
-        &find_tile(&grid, &Tile::Start)?,
-        &find_tile(&grid, &Tile::End)?,
+        grid,
+        &find_tile(grid, &Tile::Start)?,
+        &find_tile(grid, &Tile::End)?,
     )?;
     Ok(original_path[..(original_path.len() - 1)]
         .par_iter()

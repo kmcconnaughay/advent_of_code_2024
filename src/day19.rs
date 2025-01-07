@@ -47,7 +47,7 @@ fn num_possibilities<'d>(
     let num = towels
         .iter()
         .filter_map(|towel| design.strip_prefix(towel))
-        .map(|suffix| num_possibilities(&suffix, towels, cache))
+        .map(|suffix| num_possibilities(suffix, towels, cache))
         .sum();
 
     cache.insert(design, num);
